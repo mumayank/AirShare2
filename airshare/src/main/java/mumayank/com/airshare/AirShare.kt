@@ -50,6 +50,8 @@ class AirShare constructor(
     interface JoinerCallback {
         fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo)
         fun onEndpointLost(endpointId: String)
+        fun onSuccessfullyRequestedConnectionToEndpoint()
+        fun onCouldNotRequestConnectionToEndpoint(e: Exception)
     }
 
     private fun defineVars() {
@@ -138,13 +140,14 @@ class AirShare constructor(
         }
     }
 
-    fun connect(endpointId: String) {
+    fun connectToEndpoint(endpointId: String) {
         Nearby.getConnectionsClient(activity).requestConnection(Utils.DEVICE_NICK_NAME, endpointId, (connectionLifecycleCallback as ConnectionLifecycleCallback))
             .addOnSuccessListener { unused: Void ->
-                // todo
+                joinerCallback?.onSuccessfullyRequestedConnectionToEndpoint()
+
             }
             .addOnFailureListener { e: Exception ->
-                // todo
+                joinerCallback?.onCouldNotRequestConnectionToEndpoint(e)
             }
     }
 

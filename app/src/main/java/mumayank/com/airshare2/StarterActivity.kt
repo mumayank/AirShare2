@@ -18,6 +18,14 @@ class StarterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_starter)
 
         airShare = AirShare(this, object: AirShare.Callbacks {
+            override fun onStartedAdvertisingOrDiscovery() {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onCouldNotStartedAdvertisingOrDiscovery(e: Exception?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
             override fun onConnectionInitiated(connectionInitiatedCallbacks: AirShare.ConnectionInitiatedCallbacks) {
                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
@@ -44,21 +52,13 @@ class StarterActivity : AppCompatActivity() {
 
         })
 
-        airShare?.startAdvertising(object: AirShare.StartAdvertisingCallbacks {
-            override fun onStartedSuccessfully() {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
+        airShare?.startAdvertising()
 
-            override fun onCouldNotStart(e: Exception?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-        })
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        airShare.onDestroy()
+        airShare?.onDestroy()
     }
 
 }
