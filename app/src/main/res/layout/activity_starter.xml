@@ -3,15 +3,24 @@
 <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        xmlns:tools="http://schemas.android.com/tools"
         android:orientation="vertical"
+        android:background="@color/white"
         xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
     <TextView
             android:id="@+id/idTextView"
-            android:text="67 is your ID"
+            tools:text="67 is your ID"
             android:padding="16dp"
-            android:background="@color/grey"
-            android:textColor="@color/black"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:background="@color/colorAccent"
+            android:textColor="@color/white"
+            android:textStyle="bold"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 

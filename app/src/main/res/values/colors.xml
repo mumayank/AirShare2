@@ -9,6 +9,7 @@
     <color name="tomato">#FF6347</color>
     <color name="grey">#dedede</color>
     <color name="white">#ffffff</color>
+    <color name="whiteTrans">#e6ffffff</color>
     <color name="black">#000000</color>
     <color name="greyDark">#afafaf</color>
     <color name="greyLight">#f9f9f9</color>

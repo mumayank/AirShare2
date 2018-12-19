@@ -18,12 +18,20 @@
         <TextView
                 android:id="@+id/textView"
                 tools:text="Mayank"
-                android:padding="16dp"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textStyle="bold"
+                android:padding="32dp"
+                android:gravity="center"
                 android:textColor="@color/black"
                 android:background="@color/white"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
     </LinearLayout>
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/grey" />
 
 </LinearLayout>

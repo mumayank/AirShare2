@@ -1,5 +1,6 @@
 package mumayank.com.airshare2
 
+import android.app.ProgressDialog
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.RecyclerView
@@ -41,7 +42,7 @@ class JoinerActivity : AppCompatActivity() {
     }
 
     private fun setId() {
-        idTextView.text = Utils.getDeviceNickName() + " is your device's ID"
+        idTextView.text = "Device ID: " + Utils.getDeviceNickName()
     }
 
     private fun setupRv() {
@@ -55,13 +56,17 @@ class JoinerActivity : AppCompatActivity() {
                     customViewHolder.textView.text = rvItem.displayString
                     customViewHolder.parentLayout.setOnClickListener {
 
+                        progressLayout.visibility = View.VISIBLE
+
                         airShare?.requestConnectionToEndpoint(rvItem.endpointId, object: AirShare.RequestConnectionToEndpointCallback {
 
                             override fun onSuccessfullyRequestedConnectionToEndpoint() {
+                                progressLayout.visibility = View.GONE
                                 Toast.makeText(this@JoinerActivity, "Connection request is successfully placed", Toast.LENGTH_SHORT).show()
                             }
 
                             override fun onCouldNotRequestConnectionToEndpoint(e: Exception) {
+                                progressLayout.visibility = View.GONE
                                 Toast.makeText(this@JoinerActivity, "Could not place a request to connect successfully: ${e.message}", Toast.LENGTH_LONG).show()
                             }
 
@@ -116,15 +121,12 @@ class JoinerActivity : AppCompatActivity() {
             override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo, connectionInitiatedCallback: AirShare.ConnectionInitiatedCallback) {
                 AlertDialog.Builder(this@JoinerActivity)
                     .setTitle("Accept connection to " + connectionInfo.endpointName + " ?")
-                    .setMessage("Confirm the code matches on both devices: " + connectionInfo.authenticationToken)
+                    .setMessage("Confirm the code matches on both devices:\n\n" + connectionInfo.authenticationToken + "\n\n")
                     .setPositiveButton("Accept") { _, _ ->
                         connectionInitiatedCallback.onAcceptConnection()
                     }
                     .setNegativeButton("Reject") { _, _ ->
-                        connectionInitiatedCallback.onAcceptConnection()
-                    }
-                    .setNeutralButton("Cancel") { _, _ ->
-                        // do nothing
+                        connectionInitiatedCallback.onRejectConnection()
                     }
                     .setCancelable(false)
                     .show()
@@ -172,8 +174,8 @@ class JoinerActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         airShare?.onDestroy()
+        super.onDestroy()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

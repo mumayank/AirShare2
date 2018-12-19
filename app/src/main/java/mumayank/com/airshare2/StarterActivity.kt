@@ -19,7 +19,7 @@ class StarterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_starter)
 
-        idTextView.text = Utils.getDeviceNickName() + " is your device's ID"
+        idTextView.text = "Device ID: " + Utils.getDeviceNickName()
 
         airShare = AirShare(this, object: AirShare.CommonCallback {
 
@@ -40,15 +40,12 @@ class StarterActivity : AppCompatActivity() {
             override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo, connectionInitiatedCallback: AirShare.ConnectionInitiatedCallback) {
                 AlertDialog.Builder(this@StarterActivity)
                     .setTitle("Accept connection to " + connectionInfo.endpointName + " ?")
-                    .setMessage("Confirm the code matches on both devices: " + connectionInfo.authenticationToken)
+                    .setMessage("Confirm the code matches on both devices:\n\n" + connectionInfo.authenticationToken + "\n\n")
                     .setPositiveButton("Accept") { _, _ ->
                         connectionInitiatedCallback.onAcceptConnection()
                     }
                     .setNegativeButton("Reject") { _, _ ->
-                        connectionInitiatedCallback.onAcceptConnection()
-                    }
-                    .setNeutralButton("Cancel") { _, _ ->
-                        // do nothing
+                        connectionInitiatedCallback.onRejectConnection()
                     }
                     .setCancelable(false)
                     .show()
@@ -81,8 +78,8 @@ class StarterActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         airShare?.onDestroy()
+        super.onDestroy()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

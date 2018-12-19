@@ -89,9 +89,11 @@ class AirShare constructor(
 
                 when (result.status.statusCode) {
 
-                    ConnectionsStatusCodes.STATUS_OK ->
+                    ConnectionsStatusCodes.STATUS_OK -> {
                         // We're connected! Can now start sending and receiving data.
                         commonCallback.onConnected(endpointId)
+                        onDestroy()
+                    }
 
                     ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED ->
                         // The connection was rejected by one or both sides.
@@ -255,38 +257,3 @@ class AirShare constructor(
     }
 
 }
-
-
-
-
-
-
-
-
-
-/*AlertDialog.Builder(activity)
-    .setTitle("Accept connection to " + connectionInfo.endpointName)
-    .setMessage("Confirm the code matches on both devices: " + connectionInfo.authenticationToken)
-    .setPositiveButton("Accept") { dialog: DialogInterface, which: Int ->
-
-        // The user confirmed, so we can accept the connection.
-        Nearby.getConnectionsClient(activity).acceptConnection(endpointId, object: PayloadCallback() {
-            override fun onPayloadReceived(p0: String, p1: Payload) {
-
-            }
-
-            override fun onPayloadTransferUpdate(p0: String, p1: PayloadTransferUpdate) {
-
-            }
-
-        })
-
-    }
-    .setNegativeButton(
-        android.R.string.cancel
-    ) { dialog: DialogInterface, which: Int ->
-        // The user canceled, so we should reject the connection.
-        Nearby.getConnectionsClient(activity).rejectConnection(endpointId)
-    }
-    .setIcon(android.R.drawable.ic_dialog_alert)
-    .show()*/
