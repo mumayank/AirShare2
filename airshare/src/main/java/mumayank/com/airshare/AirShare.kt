@@ -1,34 +1,35 @@
 package mumayank.com.airshare
 
 import android.app.Activity
-import android.widget.Toast
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
+import mumayank.com.airpermissions.AirPermissions
 
 class AirShare constructor(
     private val activity: Activity,
-    private val callbacks: Callbacks,
+    private val commonCallback: CommonCallback,
     private val joinerCallback: JoinerCallback? = null
 ) {
 
     private var connectionLifecycleCallback: ConnectionLifecycleCallback? = null
     private var payloadCallback: PayloadCallback? = null
     private var endpointDiscoveryCallback: EndpointDiscoveryCallback? = null
+    private var airPermissions: AirPermissions? = null
 
     constructor(
         activity: Activity,
-        callbacks: Callbacks
-    ): this(activity, callbacks, null)
+        commonCallback: CommonCallback
+    ): this(activity, commonCallback, null)
 
     init {
-        Utils.SERVICE_ID = activity.application.packageName
         defineVars()
     }
 
-    interface Callbacks {
+    interface CommonCallback {
+        fun onPermissionsDenied()
         fun onStartedAdvertisingOrDiscovery()
-        fun onCouldNotStartedAdvertisingOrDiscovery(e: Exception? = null)
-        fun onConnectionInitiated(connectionInitiatedCallbacks: ConnectionInitiatedCallbacks)
+        fun onCouldNotStartAdvertisingOrDiscovery(e: Exception? = null)
+        fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo, connectionInitiatedCallback: ConnectionInitiatedCallback)
         fun onConnectionRejected(connectionError: ConnectionError)
         fun onConnected(endpointId: String)
         fun onDisconnected(endpointId: String)
@@ -36,7 +37,12 @@ class AirShare constructor(
         fun onPayloadTransferUpdate(endpointId: String, payloadTransferUpdate: PayloadTransferUpdate)
     }
 
-    interface ConnectionInitiatedCallbacks {
+    interface JoinerCallback {
+        fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo)
+        fun onEndpointLost(endpointId: String)
+    }
+
+    interface ConnectionInitiatedCallback {
         fun onAcceptConnection()
         fun onRejectConnection()
     }
@@ -47,11 +53,14 @@ class AirShare constructor(
         ConnectionErrorWithUnknownStatusCode
     }
 
-    interface JoinerCallback {
-        fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo)
-        fun onEndpointLost(endpointId: String)
+    interface RequestConnectionToEndpointCallback {
         fun onSuccessfullyRequestedConnectionToEndpoint()
         fun onCouldNotRequestConnectionToEndpoint(e: Exception)
+    }
+
+    interface PermissionCallback {
+        fun onGrantedPermissions()
+        fun onDeniedPermissions()
     }
 
     private fun defineVars() {
@@ -62,11 +71,11 @@ class AirShare constructor(
         payloadCallback = object: PayloadCallback() {
 
             override fun onPayloadReceived(p0: String, p1: Payload) {
-                callbacks.onPayloadReceived(p0, p1)
+                commonCallback.onPayloadReceived(p0, p1)
             }
 
             override fun onPayloadTransferUpdate(p0: String, p1: PayloadTransferUpdate) {
-                callbacks.onPayloadTransferUpdate(p0, p1)
+                commonCallback.onPayloadTransferUpdate(p0, p1)
             }
 
         }
@@ -82,19 +91,19 @@ class AirShare constructor(
 
                     ConnectionsStatusCodes.STATUS_OK ->
                         // We're connected! Can now start sending and receiving data.
-                        callbacks.onConnected(endpointId)
+                        commonCallback.onConnected(endpointId)
 
                     ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED ->
                         // The connection was rejected by one or both sides.
-                        callbacks.onConnectionRejected(ConnectionError.ConnectionRejectedByOneOrBothSides)
+                        commonCallback.onConnectionRejected(ConnectionError.ConnectionRejectedByOneOrBothSides)
 
                     ConnectionsStatusCodes.STATUS_ERROR ->
                         // The connection broke before it was able to be accepted.
-                        callbacks.onConnectionRejected(ConnectionError.ConnectionBrokeBeforeItCouldBeAccepted)
+                        commonCallback.onConnectionRejected(ConnectionError.ConnectionBrokeBeforeItCouldBeAccepted)
 
                     else ->
                         // Unknown status code
-                        callbacks.onConnectionRejected(ConnectionError.ConnectionErrorWithUnknownStatusCode)
+                        commonCallback.onConnectionRejected(ConnectionError.ConnectionErrorWithUnknownStatusCode)
 
                 }
 
@@ -102,12 +111,12 @@ class AirShare constructor(
 
             override fun onDisconnected(endpointId: String) {
                 // We've been disconnected from this endpoint. No more data can be sent or received.
-                callbacks.onDisconnected(endpointId)
+                commonCallback.onDisconnected(endpointId)
             }
 
             override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
 
-                callbacks.onConnectionInitiated(object: ConnectionInitiatedCallbacks {
+                commonCallback.onConnectionInitiated(endpointId, connectionInfo, object: ConnectionInitiatedCallback {
 
                     override fun onAcceptConnection() {
                         Nearby.getConnectionsClient(activity).acceptConnection(endpointId, (payloadCallback as PayloadCallback))
@@ -140,14 +149,14 @@ class AirShare constructor(
         }
     }
 
-    fun connectToEndpoint(endpointId: String) {
-        Nearby.getConnectionsClient(activity).requestConnection(Utils.DEVICE_NICK_NAME, endpointId, (connectionLifecycleCallback as ConnectionLifecycleCallback))
-            .addOnSuccessListener { unused: Void ->
-                joinerCallback?.onSuccessfullyRequestedConnectionToEndpoint()
+    fun requestConnectionToEndpoint(endpointId: String, requestConnectionToEndpointCallback: RequestConnectionToEndpointCallback) {
+        Nearby.getConnectionsClient(activity).requestConnection(Utils.getDeviceNickName(), endpointId, (connectionLifecycleCallback as ConnectionLifecycleCallback))
+            .addOnSuccessListener { unused: Void? ->
+                requestConnectionToEndpointCallback.onSuccessfullyRequestedConnectionToEndpoint()
 
             }
             .addOnFailureListener { e: Exception ->
-                joinerCallback?.onCouldNotRequestConnectionToEndpoint(e)
+                requestConnectionToEndpointCallback.onCouldNotRequestConnectionToEndpoint(e)
             }
     }
 
@@ -160,22 +169,58 @@ class AirShare constructor(
         } catch (e: Exception) {}
     }
 
+    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        airPermissions?.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    private fun requestPermission(permissionCallbacks: PermissionCallback) {
+        airPermissions = AirPermissions(
+            activity,
+            arrayOf(
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            ),
+            object: AirPermissions.Callbacks {
+                override fun onFailure() {
+                    permissionCallbacks.onDeniedPermissions()
+                }
+
+                override fun onSuccess() {
+                    permissionCallbacks.onGrantedPermissions()
+                }
+
+            }
+        )
+    }
+
     /**
      * advertising
      */
 
     fun startAdvertising() {
-        if (connectionLifecycleCallback == null) {
-            callbacks.onCouldNotStartedAdvertisingOrDiscovery()
-        } else {
-            Nearby.getConnectionsClient(activity).startAdvertising(Utils.DEVICE_NICK_NAME, Utils.SERVICE_ID, (connectionLifecycleCallback as ConnectionLifecycleCallback), AdvertisingOptions.Builder().setStrategy(Utils.STRATEGY).build())
-                .addOnSuccessListener { unused: Void ->
-                    callbacks.onStartedAdvertisingOrDiscovery()
+
+        requestPermission(object: PermissionCallback {
+            override fun onGrantedPermissions() {
+
+                if (connectionLifecycleCallback == null) {
+                    commonCallback.onCouldNotStartAdvertisingOrDiscovery()
+                } else {
+                    Nearby.getConnectionsClient(activity).startAdvertising(Utils.getDeviceNickName(), Utils.getServiceId(activity), (connectionLifecycleCallback as ConnectionLifecycleCallback), AdvertisingOptions.Builder().setStrategy(Utils.STRATEGY).build())
+                        .addOnSuccessListener { unused: Void? ->
+                            commonCallback.onStartedAdvertisingOrDiscovery()
+                        }
+                        .addOnFailureListener { e: Exception ->
+                            commonCallback.onCouldNotStartAdvertisingOrDiscovery(e)
+                        }
                 }
-                .addOnFailureListener { e: Exception ->
-                    callbacks.onCouldNotStartedAdvertisingOrDiscovery(e)
-                }
-        }
+
+            }
+
+            override fun onDeniedPermissions() {
+                commonCallback.onPermissionsDenied()
+            }
+
+        })
+
     }
 
     /**
@@ -183,17 +228,30 @@ class AirShare constructor(
      */
 
     fun startDiscovery() {
-        if (endpointDiscoveryCallback == null) {
-            callbacks.onCouldNotStartedAdvertisingOrDiscovery()
-        } else {
-            Nearby.getConnectionsClient(activity).startDiscovery(Utils.SERVICE_ID, (endpointDiscoveryCallback as EndpointDiscoveryCallback), DiscoveryOptions.Builder().setStrategy(Utils.STRATEGY).build())
-                .addOnSuccessListener { unused: Void ->
-                    callbacks.onStartedAdvertisingOrDiscovery()
+
+        requestPermission(object: PermissionCallback {
+            override fun onGrantedPermissions() {
+
+                if (endpointDiscoveryCallback == null) {
+                    commonCallback.onCouldNotStartAdvertisingOrDiscovery()
+                } else {
+                    Nearby.getConnectionsClient(activity).startDiscovery(Utils.getServiceId(activity), (endpointDiscoveryCallback as EndpointDiscoveryCallback), DiscoveryOptions.Builder().setStrategy(Utils.STRATEGY).build())
+                        .addOnSuccessListener { unused: Void? ->
+                            commonCallback.onStartedAdvertisingOrDiscovery()
+                        }
+                        .addOnFailureListener { e: Exception ->
+                            commonCallback.onCouldNotStartAdvertisingOrDiscovery(e)
+                        }
                 }
-                .addOnFailureListener { e: Exception ->
-                    callbacks.onCouldNotStartedAdvertisingOrDiscovery(e)
-                }
-        }
+
+            }
+
+            override fun onDeniedPermissions() {
+                commonCallback.onPermissionsDenied()
+            }
+
+        })
+
     }
 
 }

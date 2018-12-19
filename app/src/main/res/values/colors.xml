@@ -8,6 +8,8 @@
     <color name="skypeBlueTrans">#1912a5f4</color>
     <color name="tomato">#FF6347</color>
     <color name="grey">#dedede</color>
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
     <color name="greyDark">#afafaf</color>
     <color name="greyLight">#f9f9f9</color>
     <color name="whatsappGreen">#25D366</color>
