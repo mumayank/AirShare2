@@ -3,10 +3,44 @@
 <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingBottom="16dp"
         android:background="@android:color/white"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:visibility="invisible"
+                android:background="?android:attr/selectableItemBackground"
+                android:src="@drawable/ic_arrow_back_black_24dp"
+                android:padding="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:text="Air Share"
+                android:layout_gravity="center"
+                android:padding="16dp"
+                android:textColor="@color/black"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_height="wrap_content"/>
+
+        <ImageView
+                android:visibility="invisible"
+                android:background="?android:attr/selectableItemBackground"
+                android:src="@drawable/ic_arrow_back_black_24dp"
+                android:padding="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </LinearLayout>
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -20,8 +54,8 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_width="200dp"
-                android:layout_height="200dp">
+                android:layout_width="180dp"
+                android:layout_height="180dp">
 
             <TextView
                     android:text="Start"
@@ -40,7 +74,7 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:gravity="center|top"
-            android:paddingTop="26dp"
+            android:paddingTop="16dp"
             android:layout_height="0dp"
             android:layout_weight="1">
 
@@ -49,8 +83,8 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_width="200dp"
-                android:layout_height="200dp">
+                android:layout_width="180dp"
+                android:layout_height="180dp">
 
             <TextView
                     android:text="Join"
