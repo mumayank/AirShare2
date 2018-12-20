@@ -1,6 +1,6 @@
 package mumayank.com.airshare2
 
-import android.app.Activity
+import android.app.*
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -21,11 +21,9 @@ import android.support.v4.util.SimpleArrayMap
 import java.io.File
 import java.nio.charset.StandardCharsets
 import mumayank.com.airpermissions.AirPermissions
-import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import android.app.NotificationChannel
 import android.database.Cursor
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -232,18 +230,14 @@ class TransferActivity : AppCompatActivity() {
                             } else {
                                 val percentTransferred = (100.toFloat() * ( payloadTransferUpdate.bytesTransferred.toFloat() / payloadTransferUpdate.totalBytes.toFloat() )).toInt()
                                 if (percentTransferred == 100) {
-                                    notification
-                                        .setProgress(100, 100, false)
-                                        .setContentTitle("Transfer complete!")
+                                    updateNotificationSuccess(notification)
                                 } else {
                                     notification.setProgress(100, percentTransferred, false)
                                 }
                             }
                         }
                         PayloadTransferUpdate.Status.SUCCESS -> {
-                            notification
-                                .setProgress(100, 100, false)
-                                .setContentTitle("Transfer complete!")
+                            updateNotificationSuccess(notification)
                         }
                         PayloadTransferUpdate.Status.FAILURE -> {
                             notification
@@ -274,6 +268,13 @@ class TransferActivity : AppCompatActivity() {
 
             }
         }
+    }
+
+    private fun updateNotificationSuccess(notification: NotificationCompat.Builder) {
+        notification
+            .setProgress(100, 100, false)
+            .setContentIntent(PendingIntent.getActivity(this, 0, Intent(DownloadManager.ACTION_VIEW_DOWNLOADS), 0))
+            .setContentTitle("Transfer complete!")
     }
 
     private fun addPayloadFileName(payloadFileNameMessage: String): Long {
