@@ -9,7 +9,7 @@ import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo
 import com.google.android.gms.nearby.connection.Payload
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import mumayank.com.airshare.AirShare
-import mumayank.com.airshare.Utils
+import mumayank.com.airshare2.events.OnConnectionAcceptedOrRejected
 import mumayank.com.airshare2.events.OnEndpointFound
 import mumayank.com.airshare2.events.OnEndpointLost
 import org.greenrobot.eventbus.EventBus
@@ -113,11 +113,13 @@ class TransferActivity : AppCompatActivity() {
 
             override fun onConnectionRejected(connectionError: AirShare.ConnectionError) {
                 Toast.makeText(this@TransferActivity, "Connection rejected", Toast.LENGTH_LONG).show()
+                EventBus.getDefault().post(OnConnectionAcceptedOrRejected())
             }
 
             override fun onConnected(endpointId: String) {
                 Toast.makeText(this@TransferActivity, "connected!", Toast.LENGTH_SHORT).show()
                 connectedEndpoints.add(endpointId)
+                EventBus.getDefault().post(OnConnectionAcceptedOrRejected())
                 switchToTransferFragment()
             }
 
@@ -154,7 +156,6 @@ class TransferActivity : AppCompatActivity() {
             }
 
         })
-
         airShare?.startDiscovery()
     }
 

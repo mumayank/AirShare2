@@ -26,6 +26,9 @@ class JoinerFragment: Fragment() {
     private var rvAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = null
     private var rvItems = ArrayList<RvItem>()
 
+    private val progressTextViewText1 = "Placing connection request..."
+    private val progressTextViewText2 = "Waiting for approval..."
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         transferActivity = activity as TransferActivity
@@ -63,13 +66,14 @@ class JoinerFragment: Fragment() {
                             Toast.makeText(transferActivity, "Already connected", Toast.LENGTH_SHORT).show()
                             transferActivity.switchToTransferFragment()
                         } else {
+                            view.findViewById<TextView>(R.id.progressTextView).text = progressTextViewText1
                             view.findViewById<ViewGroup>(R.id.progressLayout).visibility = View.VISIBLE
 
                             transferActivity.airShare?.requestConnectionToEndpoint(rvItem.endpointId, object: AirShare.RequestConnectionToEndpointCallback {
 
                                 override fun onSuccessfullyRequestedConnectionToEndpoint() {
-                                    view.findViewById<ViewGroup>(R.id.progressLayout).visibility = View.GONE
-                                    Toast.makeText(transferActivity, "Connection request is successfully placed", Toast.LENGTH_SHORT).show()
+                                    view.findViewById<TextView>(R.id.progressTextView).text = progressTextViewText2
+                                    Toast.makeText(transferActivity, "Connection request is successfully placed.\nWaiting for approval...", Toast.LENGTH_SHORT).show()
                                 }
 
                                 override fun onCouldNotRequestConnectionToEndpoint(e: Exception) {
@@ -140,6 +144,11 @@ class JoinerFragment: Fragment() {
         }
         rvItems.remove(rvItems[index])
         rvAdapter?.notifyItemRemoved(index)
+    }
+
+    @Subscribe
+    fun OnConnectionAcceptedOrRejected() {
+        view?.findViewById<ViewGroup>(R.id.progressLayout)?.visibility = View.GONE
     }
 
 }
