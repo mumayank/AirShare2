@@ -21,7 +21,7 @@
                 app:pulse_count="1"
                 app:pulse_duration="2000"
                 app:pulse_repeat="0"
-                app:pulse_color="@color/skypeBlue"
+                app:pulse_color="@color/tomato"
                 app:pulse_startFromScratch="true"
                 app:pulse_interpolator="Linear">
         </pl.bclogic.pulsator4droid.library.PulsatorLayout>
@@ -35,19 +35,21 @@
                 xmlns:android="http://schemas.android.com/apk/res/android">
 
             <LinearLayout
+                    android:gravity="center"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                 <ImageView
+                        android:visibility="gone"
                         android:background="?android:attr/selectableItemBackground"
                         android:id="@+id/back"
-                        android:src="@drawable/ic_arrow_back_black_24dp"
+                        app:srcCompat="@drawable/ic_arrow_back_black_24dp"
                         android:padding="16dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
 
                 <TextView
-                        android:text="Select A Nearby Friend:"
+                        android:text="Select A Nearby Friend"
                         android:layout_gravity="center"
                         android:padding="16dp"
                         android:textColor="@color/black"
@@ -74,6 +76,7 @@
                     app:cardUseCompatPadding="true"
                     app:cardPreventCornerOverlap="true"
                     app:cardElevation="8dp"
+                    android:layout_marginBottom="16dp"
                     app:cardBackgroundColor="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
@@ -108,7 +111,6 @@
 
         <LinearLayout
                 android:id="@+id/progressLayout"
-                android:visibility="gone"
                 android:background="@color/whiteTrans"
                 android:orientation="vertical"
                 android:gravity="center"

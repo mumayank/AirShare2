@@ -15,6 +15,7 @@ import mumayank.com.airshare.AirShare
 import mumayank.com.airshare.Utils
 import mumayank.com.airshare2.events.OnEndpointFound
 import mumayank.com.airshare2.events.OnEndpointLost
+import mumayank.com.airshare2.events.OnStarted
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import pl.bclogic.pulsator4droid.library.PulsatorLayout
@@ -28,6 +29,7 @@ class JoinerFragment: Fragment() {
 
     private val progressTextViewText1 = "Placing connection request..."
     private val progressTextViewText2 = "Waiting for approval..."
+    private val progressTextViewText3 = "Initializing..."
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +38,9 @@ class JoinerFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_join, container, false)
+
+        view.findViewById<TextView>(R.id.progressTextView).text = progressTextViewText3
+        view.findViewById<ViewGroup>(R.id.progressLayout).visibility = View.VISIBLE
 
         view.findViewById<TextView>(R.id.idTextView).text = Utils.getDeviceNickName()
 
@@ -54,12 +59,6 @@ class JoinerFragment: Fragment() {
 
                     customViewHolder.textView.text = rvItem.displayString
 
-                    if (transferActivity.connectedEndpoints.contains(rvItem.endpointId)) {
-                        customViewHolder.skip.visibility = View.VISIBLE
-                    } else {
-                        customViewHolder.skip.visibility = View.GONE
-                    }
-
                     customViewHolder.parentLayout.setOnClickListener {
 
                         if (transferActivity.connectedEndpoints.contains(rvItem.endpointId)) {
@@ -73,7 +72,7 @@ class JoinerFragment: Fragment() {
 
                                 override fun onSuccessfullyRequestedConnectionToEndpoint() {
                                     view.findViewById<TextView>(R.id.progressTextView).text = progressTextViewText2
-                                    Toast.makeText(transferActivity, "Connection request is successfully placed.\nWaiting for approval...", Toast.LENGTH_SHORT).show()
+                                    //Toast.makeText(transferActivity, "Connection request is successfully placed.\nWaiting for approval...", Toast.LENGTH_SHORT).show()
                                 }
 
                                 override fun onCouldNotRequestConnectionToEndpoint(e: Exception) {
@@ -115,7 +114,6 @@ class JoinerFragment: Fragment() {
     class CustomViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val parentLayout: LinearLayout = view.parentLayout
         val textView: TextView = view.textView
-        val skip: View = view.skip
     }
 
     override fun onStart() {
@@ -150,5 +148,11 @@ class JoinerFragment: Fragment() {
     fun OnConnectionAcceptedOrRejected() {
         view?.findViewById<ViewGroup>(R.id.progressLayout)?.visibility = View.GONE
     }
+
+    @Subscribe
+    fun OnStarted(onStarted: OnStarted) {
+        view?.findViewById<ViewGroup>(R.id.progressLayout)?.visibility = View.GONE
+    }
+
 
 }

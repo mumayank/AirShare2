@@ -13,9 +13,6 @@ import com.google.android.gms.nearby.connection.Payload
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import mumayank.com.airshare.AirShare
 import mumayank.com.airshare.Utils
-import mumayank.com.airshare2.events.OnConnectionAcceptedOrRejected
-import mumayank.com.airshare2.events.OnEndpointFound
-import mumayank.com.airshare2.events.OnEndpointLost
 import org.greenrobot.eventbus.EventBus
 import android.support.v4.util.SimpleArrayMap
 import java.io.File
@@ -27,13 +24,13 @@ import android.util.Log
 import android.database.Cursor
 import android.net.Uri
 import android.provider.OpenableColumns
+import mumayank.com.airshare2.events.*
 
 
 class TransferActivity : AppCompatActivity() {
 
     var airShare: AirShare? = null
     var connectedEndpoints = ArrayList<String>()
-    var currentlySelectedEndpoint = ""
     private var airPermission: AirPermissions? = null
 
     val READ_REQUEST_CODE = 42
@@ -45,6 +42,10 @@ class TransferActivity : AppCompatActivity() {
 
     val incomingPayloads = SimpleArrayMap<Long, NotificationCompat.Builder>()
     val outgoingPayloads = SimpleArrayMap<Long, NotificationCompat.Builder>()
+
+    val transferItems = ArrayList<TransferItem>()
+    data class TransferItem(val payloadId: Long, var fileName: String, var progress: Int, val isDownloading: Boolean, var isError: Boolean = false)
+
     lateinit var notificationManager: NotificationManager
     val CHANNEL_ID = "AirShare"
 
@@ -56,6 +57,8 @@ class TransferActivity : AppCompatActivity() {
     }
 
     private var stack: Stack = Stack.Select
+
+    var endpointIdCurrentlySelected = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,7 +83,7 @@ class TransferActivity : AppCompatActivity() {
             ),
             object: AirPermissions.Callbacks {
                 override fun onSuccess() {
-                    switchToSelectionFragment()
+                    switchToSelectionFragment(false)
                 }
 
                 override fun onFailure() {
@@ -90,10 +93,14 @@ class TransferActivity : AppCompatActivity() {
         )
     }
 
-    fun switchToSelectionFragment() {
-        supportFragmentManager.beginTransaction().setCustomAnimations(R.anim.fade_in, R.anim.fade_out).replace(R.id.parentLayout, SelectionFragment()).commit()
-        stack = Stack.Select
-        refresh()
+    fun switchToSelectionFragment(shouldFinish: Boolean) {
+        if (shouldFinish) {
+            finish()
+        } else {
+            supportFragmentManager.beginTransaction().setCustomAnimations(R.anim.fade_in, R.anim.fade_out).replace(R.id.parentLayout, SelectionFragment()).commit()
+            stack = Stack.Select
+            refresh()
+        }
     }
 
     fun switchToStarterFragment() {
@@ -108,14 +115,14 @@ class TransferActivity : AppCompatActivity() {
 
     fun switchToTransferFragment() {
         supportFragmentManager.beginTransaction().setCustomAnimations(R.anim.fade_in, R.anim.fade_out).replace(R.id.parentLayout, TransferFragment()).commit()
-        stack = Stack.Transfer
+        stack = Stack.Select // have done this on purpose
         refresh()
     }
 
     override fun onBackPressed() {
         if (stack == Stack.Transfer || stack == Stack.Start || stack == Stack.Join) {
             stack = Stack.Select
-            switchToSelectionFragment()
+            switchToSelectionFragment(true)
         } else {
             super.onBackPressed()
         }
@@ -145,7 +152,8 @@ class TransferActivity : AppCompatActivity() {
             }
 
             override fun onStartedAdvertisingOrDiscovery() {
-                Toast.makeText(this@TransferActivity, "Started...", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this@TransferActivity, "Started...", Toast.LENGTH_SHORT).show()
+                EventBus.getDefault().post(OnStarted())
             }
 
             override fun onCouldNotStartAdvertisingOrDiscovery(e: Exception?) {
@@ -154,7 +162,7 @@ class TransferActivity : AppCompatActivity() {
             }
 
             override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo, connectionInitiatedCallback: AirShare.ConnectionInitiatedCallback) {
-                AlertDialog.Builder(this@TransferActivity)
+                /*AlertDialog.Builder(this@TransferActivity)
                     .setTitle("Accept connection to " + connectionInfo.endpointName + " ?")
                     .setMessage("Confirm the code matches on both devices:\n\n" + connectionInfo.authenticationToken + "\n\n")
                     .setPositiveButton("Accept") { _, _ ->
@@ -164,7 +172,9 @@ class TransferActivity : AppCompatActivity() {
                         connectionInitiatedCallback.onRejectConnection()
                     }
                     .setCancelable(false)
-                    .show()
+                    .show()*/
+                connectionInitiatedCallback.onAcceptConnection()
+                //Toast.makeText(this@TransferActivity, "Connected with ${connectionInfo.endpointName}\nSecurity code: ${connectionInfo.authenticationToken}", Toast.LENGTH_LONG).show()
             }
 
             override fun onConnectionRejected(connectionError: AirShare.ConnectionError) {
@@ -174,7 +184,7 @@ class TransferActivity : AppCompatActivity() {
 
             override fun onConnected(endpointId: String) {
                 Toast.makeText(this@TransferActivity, "connected!", Toast.LENGTH_SHORT).show()
-                currentlySelectedEndpoint = endpointId
+                endpointIdCurrentlySelected = endpointId
                 connectedEndpoints.add(endpointId)
                 EventBus.getDefault().post(OnConnectionAcceptedOrRejected())
                 switchToTransferFragment()
@@ -183,6 +193,7 @@ class TransferActivity : AppCompatActivity() {
             override fun onDisconnected(endpointId: String) {
                 connectedEndpoints.remove(endpointId)
                 Toast.makeText(this@TransferActivity, "disconnected", Toast.LENGTH_LONG).show()
+                finish()
             }
 
             override fun onPayloadReceived(endpointId: String, payload: Payload) {
@@ -192,21 +203,35 @@ class TransferActivity : AppCompatActivity() {
                     processFilePayload(payloadId)
                 } else if (payload.type == Payload.Type.FILE) {
                     incomingFilePayloads.put(payload.id, payload)
-                }
 
-                if (payload.type == Payload.Type.BYTES) {
-                    // do nothing
-                } else {
                     val notification = buildNotification(payload, true)
-                    notificationManager.notify(payload.id.toInt(), notification.build())
+                    //notificationManager.notify(payload.id.toInt(), notification.build())
                     incomingPayloads.put(payload.id, notification)
+
+                    transferItems.add(TransferItem(
+                        payload.id,
+                        filePayloadFilenames.get(payload.id) ?: "Incoming File",
+                        0,
+                        true
+                    ))
+                    EventBus.getDefault().post(OnTransferUpdate())
                 }
             }
 
             override fun onPayloadTransferUpdate(endpointId: String, payloadTransferUpdate: PayloadTransferUpdate) {
 
                 // notification
+
                 val payloadId = payloadTransferUpdate.payloadId
+
+                var transferItem: TransferItem? = null
+                for (transferItemTemp in transferItems) {
+                    if (transferItemTemp.payloadId == payloadId) {
+                        transferItem = transferItemTemp
+                        break
+                    }
+                }
+
                 var notification: NotificationCompat.Builder? = null
                 if (incomingPayloads.containsKey(payloadId)) {
                     notification = incomingPayloads.get(payloadId)
@@ -230,35 +255,49 @@ class TransferActivity : AppCompatActivity() {
                             } else {
                                 val percentTransferred = (100.toFloat() * ( payloadTransferUpdate.bytesTransferred.toFloat() / payloadTransferUpdate.totalBytes.toFloat() )).toInt()
                                 if (percentTransferred == 100) {
-                                    updateNotificationSuccess(notification)
+                                    updateNotificationSuccess(notification, transferItem)
                                 } else {
                                     notification.setProgress(100, percentTransferred, false)
+                                }
+
+                                if (transferItem != null) {
+                                    transferItem.progress = percentTransferred
+                                    EventBus.getDefault().post(OnTransferUpdate())
                                 }
                             }
                         }
                         PayloadTransferUpdate.Status.SUCCESS -> {
-                            updateNotificationSuccess(notification)
+                            updateNotificationSuccess(notification, transferItem)
                         }
                         PayloadTransferUpdate.Status.FAILURE -> {
                             notification
                                 .setProgress(0,0,false)
                                 .setContentTitle("Transfer failed")
+
+                            if (transferItem != null) {
+                                transferItem.isError = true
+                                EventBus.getDefault().post(OnTransferUpdate())
+                            }
                         }
                         PayloadTransferUpdate.Status.CANCELED -> {
                             notification
                                 .setProgress(0,0,false)
                                 .setContentTitle("Transfer failed")
+
+                            if (transferItem != null) {
+                                transferItem.isError = true
+                                EventBus.getDefault().post(OnTransferUpdate())
+                            }
                         }
                         else -> {
                             Log.e("airshare", "Unknown status of notification update")
                         }
                     }
-                    notificationManager.notify(payloadId.toInt(), notification.build())
+                    //notificationManager.notify(payloadId.toInt(), notification.build())
                 }
 
                 // actual work
                 if (payloadTransferUpdate.status == PayloadTransferUpdate.Status.SUCCESS) {
-                    val payloadId = payloadTransferUpdate.payloadId
                     val payload = incomingFilePayloads.remove(payloadId)
                     completedFilePayloads.put(payloadId, payload)
                     if (payload?.type == Payload.Type.FILE) {
@@ -270,11 +309,16 @@ class TransferActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateNotificationSuccess(notification: NotificationCompat.Builder) {
+    private fun updateNotificationSuccess(notification: NotificationCompat.Builder, transferItem: TransferItem?) {
         notification
             .setProgress(100, 100, false)
             .setContentIntent(PendingIntent.getActivity(this, 0, Intent(DownloadManager.ACTION_VIEW_DOWNLOADS), 0))
             .setContentTitle("Transfer complete!")
+
+        if (transferItem != null) {
+            transferItems.get(transferItems.indexOf(transferItem)).progress = 100
+            EventBus.getDefault().post(OnTransferUpdate())
+        }
     }
 
     private fun addPayloadFileName(payloadFileNameMessage: String): Long {
@@ -330,7 +374,7 @@ class TransferActivity : AppCompatActivity() {
     }
 
     interface Callbacks {
-        fun onSuccess(fileDisplayName: String, fileSizeInMB: Long)
+        fun onSuccess(fileDisplayName: String, fileSize: Long)
         fun onOperationFailed()
     }
 
@@ -347,7 +391,6 @@ class TransferActivity : AppCompatActivity() {
                         var size = 0L
                         if (!it.isNull(sizeIndex)) {
                             size = it.getLong(sizeIndex)
-                            size = (size/1024L)/1024L
                         }
                         callbacks.onSuccess(displayName, size)
                     } else {

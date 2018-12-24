@@ -19,79 +19,107 @@
             app:pulse_count="1"
             app:pulse_duration="2000"
             app:pulse_repeat="0"
-            app:pulse_color="@color/skypeBlue"
+            app:pulse_color="@color/tomato"
             app:pulse_startFromScratch="true"
             app:pulse_interpolator="Linear">
     </pl.bclogic.pulsator4droid.library.PulsatorLayout>
 
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <LinearLayout
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <ImageView
+                    android:id="@+id/back"
+                    android:visibility="gone"
+                    android:background="?android:attr/selectableItemBackground"
+                    app:srcCompat="@drawable/ic_arrow_back_black_24dp"
+                    android:padding="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:text="Broadcast Started"
+                    android:layout_gravity="center"
+                    android:padding="16dp"
+                    android:textColor="@color/black"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <android.support.v7.widget.CardView
+                    android:id="@+id/cardView"
+                    android:layout_gravity="center"
+                    app:cardUseCompatPadding="true"
+                    app:cardPreventCornerOverlap="true"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="@color/white"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                <LinearLayout
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="32dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                    <TextView
+                            android:id="@+id/idTextView"
+                            android:textSize="100sp"
+                            tools:text="67"
+                            android:textColor="@color/black"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+
+                    <TextView
+                            android:text="MY DEVICE ID"
+                            android:textColor="@color/black"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+        </FrameLayout>
+
+    </LinearLayout>
 
     <LinearLayout
+            android:id="@+id/progressLayout"
+            android:background="@color/whiteTrans"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
-        <ImageView
-                android:id="@+id/back"
-                android:background="?android:attr/selectableItemBackground"
-                android:src="@drawable/ic_arrow_back_black_24dp"
-                android:padding="16dp"
+        <ProgressBar
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
         <TextView
-                android:text="Broadcast Started"
-                android:layout_gravity="center"
-                android:padding="16dp"
+                android:id="@+id/progressTextView"
+                android:layout_marginTop="16dp"
+                android:text="Initializing..."
                 android:textColor="@color/black"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
     </LinearLayout>
-
-
-    <android.support.v7.widget.CardView
-            android:layout_gravity="center"
-            app:cardUseCompatPadding="true"
-            app:cardPreventCornerOverlap="true"
-            app:cardElevation="8dp"
-            app:cardBackgroundColor="@color/white"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-        <LinearLayout
-                android:orientation="vertical"
-                android:gravity="center"
-                android:padding="32dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-            <TextView
-                    android:id="@+id/idTextView"
-                    android:textSize="100sp"
-                    tools:text="67"
-                    android:textColor="@color/black"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-            <TextView
-                    android:text="MY DEVICE ID"
-                    android:textColor="@color/black"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-        </LinearLayout>
-
-    </android.support.v7.widget.CardView>
-
-    <TextView
-            android:id="@+id/skip"
-            android:text="TAP HERE IF ALREADY CONNECTED"
-            android:padding="16dp"
-            android:layout_marginBottom="32dp"
-            android:layout_gravity="bottom|center"
-            android:textStyle="bold"
-            android:textColor="@color/colorAccent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
 
 </FrameLayout>

@@ -1,7 +1,11 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
        android:shape="oval">
 
-    <solid android:color="@color/skypeBlue" />
+    <solid android:color="@color/tomato" />
+
+    <stroke
+            android:width="2dp"
+            android:color="@color/tomatoTrans" />
 
     <size
             android:height="60dp"

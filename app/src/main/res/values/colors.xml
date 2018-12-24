@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">@color/skypeBlue</color>
-    <color name="colorPrimaryDark">@color/skypeBlue</color>
-    <color name="colorAccent">@color/skypeBlue</color>
+    <color name="colorPrimary">@color/tomato</color>
+    <color name="colorPrimaryDark">@color/tomato</color>
+    <color name="colorAccent">@color/tomato</color>
 
-    <color name="skypeBlue">#12A5F4</color>
-    <color name="skypeBlueTrans">#1912a5f4</color>
-    <color name="tomato">#FF6347</color>
+    <!--<color name="skypeBlue">#12A5F4</color>
+    <color name="skypeBlueTrans2">#6412a5f4</color>
+    <color name="skypeBlueTrans">#0a12a5f4</color>-->
+    <color name="tomato">#25d366</color>
+    <color name="tomatoTrans">#6425d366</color>
+    <color name="tomatoTrans2">#3225d366</color>
+    <color name="tomatoTrans3">#1425d366</color>
     <color name="grey">#dedede</color>
     <color name="white">#ffffff</color>
     <color name="whiteTrans">#e6ffffff</color>
     <color name="black">#000000</color>
     <color name="greyDark">#afafaf</color>
     <color name="greyLight">#f9f9f9</color>
-    <color name="whatsappGreen">#25D366</color>
-    <color name="whatsappGreenTrans">#0a25d366</color>
+    <!--<color name="whatsappGreen">#25D366</color>
+    <color name="whatsappGreenTrans">#3225d366</color>-->
 </resources>

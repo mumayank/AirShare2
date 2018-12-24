@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.v7.widget.CardView
+            android:id="@+id/cardView"
+            app:cardPreventCornerOverlap="true"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="1dp"
+            android:layout_margin="8dp"
+            app:cardBackgroundColor="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_gravity="center"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:progress="200"
+                    android:scaleY="30"
+                    android:progressBackgroundTint="@color/black"
+                    android:progressTint="@color/tomato"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+            <LinearLayout
+                    android:padding="16dp"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                <TextView
+                        android:id="@+id/name"
+                        android:text="MUSIC FILE 1 EMIWAY BANTAI"
+                        android:singleLine="true"
+                        android:textStyle="bold"
+                        android:ellipsize="end"
+                        android:textColor="@color/white"
+                        android:layout_gravity="center"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"/>
+
+                <LinearLayout
+                        android:layout_marginTop="8dp"
+                        android:layout_gravity="end"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                    <TextView
+                            android:id="@+id/open"
+                            android:text="OPEN"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"
+                            android:background="?android:attr/selectableItemBackground"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+
+                    <ImageView
+                            android:id="@+id/error"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="16dp"
+                            android:tint="@color/white"
+                            app:srcCompat="@drawable/ic_error_outline_black_24dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+
+                    <LinearLayout
+                            android:gravity="center"
+                            android:layout_marginLeft="16dp"
+                            android:layout_gravity="center"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+
+                        <ImageView
+                                android:id="@+id/uploading"
+                                android:visibility="gone"
+                                android:layout_gravity="center"
+                                android:tint="@color/white"
+                                app:srcCompat="@drawable/ic_file_upload_black_24dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+
+                        <ImageView
+                                android:id="@+id/downloading"
+                                android:layout_gravity="center"
+                                android:tint="@color/white"
+                                app:srcCompat="@drawable/ic_file_download_black_24dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+
+                        <ImageView
+                                android:id="@+id/done"
+                                android:visibility="gone"
+                                android:layout_gravity="center"
+                                android:tint="@color/white"
+                                app:srcCompat="@drawable/ic_check_circle_black_24dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>
